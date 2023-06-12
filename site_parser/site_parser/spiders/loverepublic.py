@@ -8,6 +8,7 @@ from ..items import SiteParserItem
 class LoverepublicSpider(scrapy.Spider):
     name = "loverepublic"
     allowed_domains = ["loverepublic.ru"]
+    base_url = 'https://loverepublic.ru'
     start_urls = ["https://loverepublic.ru/upload/sitemap-iblock-4.xml",
                   "https://loverepublic.ru/upload/sitemap-iblock-46.xml"]
 
@@ -30,16 +31,14 @@ class LoverepublicSpider(scrapy.Spider):
                 callback=self.parse_product,
                 errback=self.handle_error
             )
-
-    # noinspection PyTypeChecker
     def parse_product(self, response):
         data = SiteParserItem()
         rez: dict = response.json()
         data['is_available'] = rez['data']['isAvailable']
         data['item_name'] = rez['data']['detailName'].strip()
         data['item_price'] = int(rez['data']['sku'][0]['properties']['starayaTsena']['value'])
-        data['item_image'] = next((link for link in rez['data']['images']['original'] if link.endswith('_0.jpg')), None)
-        data['source_url'] = response.urljoin(rez['data']['link'])
+        data['item_image'] = rez['data']['images']['original'][0]
+        data['source_url'] = self.base_url + rez['data']['link']
         return data
 
     def handle_error(self, failure):
