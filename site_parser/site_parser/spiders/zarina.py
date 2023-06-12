@@ -24,8 +24,8 @@ class ZarinaSpider(scrapy.Spider):
     def parse_product(self, response):
         data = SiteParserItem()
         data['is_available'] = True
-        data['item_price'] = int(response.css('div.product__price-current::text').get().strip().replace(' ₽', ''))
-        data['item_name'] = response.css('h1.product__title::text').get()
+        data['item_price'] = int(re.findall(r'\d{3,4}', response.css('div.product__price-current::text').get())[0])
+        data['item_name'] = response.css('h1.product__title::text').get().strip()
         data['item_image'] = response.css('div.product__media-item img::attr("data-src")').get()
         data['source_url'] = response.url
         return data
